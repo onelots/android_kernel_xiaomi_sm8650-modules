@@ -40,14 +40,14 @@
 #include "syna_tcm2.h"
 #include "syna_tcm2_cdev.h"
 #include "syna_tcm2_platform.h"
-#include "synaptics_touchcom_core_dev.h"
-#include "synaptics_touchcom_func_base.h"
-#include "synaptics_touchcom_func_touch.h"
+#include "tcm/synaptics_touchcom_core_dev.h"
+#include "tcm/synaptics_touchcom_func_base.h"
+#include "tcm/synaptics_touchcom_func_touch.h"
 #ifdef STARTUP_REFLASH
 #ifdef HAS_ROMBOOT_REFLASH_FEATURE
-#include "synaptics_touchcom_func_romboot.h"
+#include "tcm/synaptics_touchcom_func_romboot.h"
 #else
-#include "synaptics_touchcom_func_reflash.h"
+#include "tcm/synaptics_touchcom_func_reflash.h"
 #endif
 #endif
 #include "../xiaomi/xiaomi_touch.h"
@@ -577,7 +577,7 @@ exit:
  * @return
  *    on success, 0; otherwise, negative value on error.
  */
-static int syna_dev_create_input_device(struct syna_tcm *tcm)
+static int __maybe_unused syna_dev_create_input_device(struct syna_tcm *tcm)
 {
 #if 1
 	struct tcm_dev *tcm_dev = tcm->tcm_dev;
@@ -743,7 +743,7 @@ static int syna_dev_check_input_params(struct syna_tcm *tcm)
  * @return
  *    on success, 0; otherwise, negative value on error.
  */
-static int syna_dev_set_up_input_device(struct syna_tcm *tcm)
+static int __maybe_unused syna_dev_set_up_input_device(struct syna_tcm *tcm)
 {
 	int retval = 0;
 
@@ -1762,14 +1762,11 @@ static int syna_dev_connect(struct syna_tcm *tcm)
 					FW_MODE_SWITCH_DELAY_MS);
 		} else {
 			/* allocate and register to input device subsystem */
-			/*
-			only register input device in syna_dev_reflash_startup
 			retval = syna_dev_set_up_input_device(tcm);
 			if (retval < 0) {
 				LOGE("Fail to set up input device\n");
 				goto err_setup_input_dev;
 			}
-			*/
 		}
 
 		break;
@@ -1826,6 +1823,7 @@ err_request_irq:
 	/* unregister input device */
 	syna_dev_release_input_device(tcm);
 
+err_setup_input_dev:
 err_detect_dev:
 #ifdef POWER_SEQUENCE_ON_CONNECT
 	if (hw_if->ops_power_on)

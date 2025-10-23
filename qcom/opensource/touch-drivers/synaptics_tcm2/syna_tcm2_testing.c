@@ -36,8 +36,8 @@
  */
 #include "syna_tcm2_testing.h"
 #include "syna_tcm2_testing_limits.h"
-#include "synaptics_touchcom_core_dev.h"
-#include "synaptics_touchcom_func_base.h"
+#include "tcm/synaptics_touchcom_core_dev.h"
+#include "tcm/synaptics_touchcom_func_base.h"
 
 /* g_testing_dir represents the root folder of testing sysfs
  */
@@ -2096,7 +2096,7 @@ static int testing_copy_rawshift_diff_to_output(enum tcm_test_code testcode)
 	unsigned int output_size;
 	unsigned int rows;
 	unsigned int cols;
-	short *rawdiff;
+	short *rawdiff = NULL;
 	struct tcm_application_info *app_info;
  
 	app_info = &g_tcm_ptr->tcm_dev->app_info;
@@ -2117,9 +2117,12 @@ static int testing_copy_rawshift_diff_to_output(enum tcm_test_code testcode)
 	if (testing_hcd->test_item == TEST_PID85_RAWSHIFTTEST) {
 		rawdiff = rawDiffPT85;
 		testing_hcd->result = result_pt85;
-	} else if(testing_hcd->test_item == TEST_PID86_RAWSHIFTTEST){
+	} else if (testing_hcd->test_item == TEST_PID86_RAWSHIFTTEST) {
 		rawdiff = rawDiffPT86;
 		testing_hcd->result = result_pt86;
+	} else {
+		UNLOCK_BUFFER(testing_hcd->output);
+		return -EINVAL;
 	}
 
 	/* copy data content to the destination */
