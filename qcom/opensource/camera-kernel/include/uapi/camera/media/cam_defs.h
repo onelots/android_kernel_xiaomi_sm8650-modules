@@ -98,7 +98,10 @@ struct cam_control {
 	__u32        reserved;
 	__u64        handle;
 	/*add by xiaomi begin*/
-	__u32        crc_error_divisor;
+	union {
+		__u32        csid_recovery;
+		__u32        crc_error_divisor;
+	};
 	/*add by xiaomi end*/
 };
 
@@ -612,7 +615,10 @@ struct cam_acquire_dev_cmd {
 	__u32        handle_type;
 	__u32        num_resources;
 	/*add by xiaomi begin*/
-	__u32        crc_error_divisor;
+	union {
+		__u32        csid_recovery;
+		__u32        crc_error_divisor;
+	};
 	/*add by xiaomi end*/
 	__u64        resource_hdl;
 };
@@ -663,7 +669,10 @@ struct cam_acquire_hw_cmd_v1 {
 	__u32        handle_type;
 	__u32        data_size;
 	/*add by xiaomi begin*/
-	__u32        crc_error_divisor;
+	union {
+		__u32        csid_recovery;
+		__u32        crc_error_divisor;
+	};
 	/*add by xiaomi end*/
 	__u64        resource_hdl;
 };
@@ -712,7 +721,10 @@ struct cam_acquire_hw_cmd_v2 {
 	__u32                    handle_type;
 	__u32                    data_size;
 	/*add by xiaomi begin*/
-	__u32                    crc_error_divisor;
+	union {
+		__u32                    csid_recovery;
+		__u32                    crc_error_divisor;
+	};
 	/*add by xiaomi end*/
 	__u64                    resource_hdl;
 	struct cam_acquired_hw_info hw_info;
