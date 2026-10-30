@@ -280,6 +280,7 @@ static void cam_csiphy_reset_phyconfig_param(struct csiphy_device *csiphy_dev,
 	csiphy_dev->csiphy_info[index].conn_csid_idx = -1;
 	csiphy_dev->csiphy_info[index].use_hw_client_voting = false;
 	csiphy_dev->csiphy_info[index].is_drv_config_en = false;
+	csiphy_dev->csiphy_info[index].is_modify_onthego = false;  /*add by xiaomi*/
 }
 
 static inline void cam_csiphy_apply_onthego_reg_values(void __iomem *csiphybase, uint8_t csiphy_idx)
@@ -836,6 +837,8 @@ static int __cam_csiphy_parse_lane_info_cmd_buf(
 			(cam_cmd_csiphy_info_v2->mipi_flags & SKEW_CAL_MASK);
 		csiphy_dev->csiphy_info[index].channel_type =
 			cam_cmd_csiphy_info_v2->channel_type;
+		csiphy_dev->csiphy_info[index].is_modify_onthego =
+			cam_cmd_csiphy_info_v2->is_modify_onthego;	/*add by xiaomi*/
 	} else if (cmd_desc->meta_data == CAM_CSIPHY_PACKET_META_LANE_INFO) {
 		struct cam_csiphy_info *cam_cmd_csiphy_info = NULL;
 
@@ -875,6 +878,8 @@ static int __cam_csiphy_parse_lane_info_cmd_buf(
 			(cam_cmd_csiphy_info->mipi_flags & SKEW_CAL_MASK);
 		csiphy_dev->csiphy_info[index].channel_type =
 			CAM_CSIPHY_DATARATE_SHORT_CHANNEL;
+		csiphy_dev->csiphy_info[index].is_modify_onthego =
+			cam_cmd_csiphy_info->is_modify_onthego;	/*add by xiaomi*/
 	}
 
 	/* Cannot support CPHY combo mode with One sensor setting
@@ -1328,6 +1333,18 @@ static int cam_csiphy_cphy_data_rate_config(struct csiphy_device *csiphy_device,
 				}
 			break;
 /* xiaomi add channel log - end */
+/* xiaomi add modify setting start */
+			case CSIPHY_MODIFY_SETTING:
+				if (csiphy_device->csiphy_info[idx].is_modify_onthego) {
+					cam_io_w_mb(reg_data,
+						csiphybase + reg_addr);
+					CAM_DBG(CAM_CSIPHY, "is_modify_onthego: %d, override reg_addr: %x, reg_data: %x",
+							csiphy_device->csiphy_info[idx].is_modify_onthego,
+							reg_addr,
+							reg_data);
+				}
+			break;
+/* xiaomi add modify setting end */
 			case CSIPHY_SETTLE_CNT_LOWER_BYTE:
 				cam_io_w_mb(settle_cnt & 0xFF,
 					csiphybase + reg_addr);
