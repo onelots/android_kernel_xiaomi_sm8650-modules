@@ -64,6 +64,7 @@ enum cam_debug_module_id {
 	CAM_DMA_FENCE,           /* bit 34 */
 	CAM_SENSOR_UTIL,         /* bit 35 */
 	CAM_SYNX,                /* bit 36 */
+	CAM_ISPV4,               /* bit 37 */
 	CAM_APERTURE = 60,       /* bit 60 */
 	MI_PARKLENS = 61,        /* bit 61 */
 	MI_DEBUG = 62,           /* bit 62 */
@@ -145,6 +146,7 @@ static const char *cam_debug_mod_name[CAM_DBG_MOD_MAX] = {
 	[CAM_DMA_FENCE]   = "CAM-DMA-FENCE",
 	[CAM_SENSOR_UTIL] = "CAM-SENSOR-UTIL",
 	[CAM_SYNX]        = "CAM_SYNX",
+	[CAM_ISPV4]       = "CAM-ISPV4",
 	[CAM_APERTURE]    = "MI-CAM-APERTURE",
 	[MI_PARKLENS]     = "MI-CAM-PARKLENS",
 	[MI_DEBUG]        = "MI-CAM-DEBUG",
@@ -187,13 +189,14 @@ __builtin_choose_expr(((module_id) == CAM_CRE), "CAM-CRE",                  \
 __builtin_choose_expr(((module_id) == CAM_PRESIL_CORE), "CAM-CORE-PRESIL",  \
 __builtin_choose_expr(((module_id) == CAM_TPG), "CAM-TPG",                  \
 __builtin_choose_expr(((module_id) == CAM_DMA_FENCE), "CAM-DMA-FENCE",      \
-__builtin_choose_expr(((module_id) == CAM_SENSOR_UTIL), "CAM-SENSOR-UTIL",      \
+__builtin_choose_expr(((module_id) == CAM_SENSOR_UTIL), "CAM-SENSOR-UTIL",  \
 __builtin_choose_expr(((module_id) == CAM_SYNX), "CAM-SYNX",                \
+__builtin_choose_expr(((module_id) == CAM_ISPV4), "CAM-ISPV4",              \
 __builtin_choose_expr(((module_id) == CAM_APERTURE), "CAM-APERTURE",        \
 __builtin_choose_expr(((module_id) == MI_PARKLENS), "MI-CAM-PARKLENS",      \
 __builtin_choose_expr(((module_id) == MI_DEBUG), "MI-DEBUG",                \
 __builtin_choose_expr(((module_id) == MI_PERF), "MI-PERF",                  \
-"CAMERA")))))))))))))))))))))))))))))))))))))))))
+"CAMERA"))))))))))))))))))))))))))))))))))))))))))
 
 #define CAM_DBG_MOD_NAME(module_id) \
 ((module_id < CAM_DBG_MOD_MAX) ? cam_debug_mod_name[module_id] : "CAMERA")
