@@ -456,4 +456,9 @@ int cam_ife_csid_get_base(struct cam_hw_soc_info *soc_info,
 const char *cam_ife_csid_reset_type_to_string(enum cam_ife_csid_reset_type reset_type);
 
 const uint8_t **cam_ife_csid_get_irq_reg_tag_ptr(void);
+
+/* xiaomi add mipi_error_flag begin */
+void count_mipi_error(uint32_t res_type);
+/* xiaomi add mipi_error_flag end */
+
 #endif /*_CAM_IFE_CSID_COMMON_H_ */
