@@ -175,4 +175,11 @@ int cam_hw_notify_v4l2_error_event( char *name, void *ctrl, uint32_t id,
 
 uint32_t cam_hw_get_cci_ops(struct i2c_settings_list *i2c_list);
 //end
+
+#if IS_ENABLED(CONFIG_MIISP)
+int cam_sensor_core_power_up_extra(struct cam_sensor_power_ctrl_t *ctrl,
+                struct cam_hw_soc_info *soc_info);
+int cam_sensor_util_power_down_extra(struct cam_sensor_power_ctrl_t *ctrl,
+        struct cam_hw_soc_info *soc_info);
+#endif
 #endif /* _CAM_SENSOR_UTIL_H_ */

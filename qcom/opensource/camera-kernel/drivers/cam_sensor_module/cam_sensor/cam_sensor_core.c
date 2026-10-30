@@ -480,6 +480,106 @@ static int32_t cam_sensor_pkt_parse(struct cam_sensor_ctrl_t *s_ctrl,
 	}
 	/* xiaomi add end */
 
+  	case CAM_SENSOR_PACKET_OPCODE_PIPELINE_DELAY: {
+		uint32_t * pipeline_delay = NULL;
+		uint32_t total_cmd_buf_in_bytes = 0;
+		uint32_t *cmd_buf    = NULL;
+  		offset = (uint32_t *)&csl_packet->payload;
+  		offset += (csl_packet->cmd_buf_offset / sizeof(uint32_t));
+  		cmd_desc = (struct cam_cmd_buf_desc *)(offset);
+
+  		CAM_DBG(CAM_SENSOR, "[pipeline delay] num_cmd_buf %d",
+  			csl_packet->num_cmd_buf);
+
+  		if (0 == csl_packet->num_cmd_buf) {
+  			CAM_ERR(CAM_SENSOR,
+  				"[pipeline delay] Recvied packet is empty.");
+  			rc = -EINVAL;
+  			goto end;
+  		}
+
+  		total_cmd_buf_in_bytes = cmd_desc[0].length;
+
+  		CAM_DBG(CAM_SENSOR, "[pipeline delay] total_cmd_buf_in_bytes %d",
+  			total_cmd_buf_in_bytes);
+
+  		if (sizeof(uint32_t) > total_cmd_buf_in_bytes) {
+  			CAM_ERR(CAM_SENSOR,
+  				"[pipeline delay] Insufficient number of packet bytes received: %d.",
+  				total_cmd_buf_in_bytes);
+  			rc = -EINVAL;
+  			goto end;
+  		}
+
+  		rc = cam_mem_get_cpu_buf(cmd_desc[0].mem_handle,
+  			&generic_ptr, &len_of_buff);
+
+  		if (rc < 0) {
+  			CAM_ERR(CAM_SENSOR, "[pipeline delay] Failed to get cpu buf : 0x%x",
+  				cmd_desc[0].mem_handle);
+  			rc = -EINVAL;
+  			return rc;
+  		}
+
+  		cmd_buf = (uint32_t *)generic_ptr;
+
+  		if (!cmd_buf) {
+  			CAM_ERR(CAM_SENSOR, "[pipeline delay] invalid cmd buf");
+  			rc = -EINVAL;
+  			return rc;
+  		}
+  		if ((len_of_buff < sizeof(uint32_t)) ||
+  			(cmd_desc[0].offset > (len_of_buff -
+  			sizeof(uint32_t)))) {
+
+				CAM_ERR(CAM_SENSOR,
+					"[pipeline delay] Invalid length");
+  			return -EINVAL;
+  		}
+
+  		cmd_buf += cmd_desc[0].offset / sizeof(uint32_t);
+  		pipeline_delay = ((uint32_t*)cmd_buf);
+
+  		s_ctrl->pipeline_delay = *pipeline_delay;
+  		CAM_INFO(CAM_SENSOR, "[pipeline delay]: %d",
+  			*pipeline_delay);
+
+		cam_mem_put_cpu_buf(cmd_desc[0].mem_handle);
+
+  		goto end;
+  	}
+
+#if IS_ENABLED(CONFIG_MIISP)
+	case CAM_SENSOR_PACKET_OPCODE_SENSOR_ISPV4_POWERUP: {
+		CAM_WARN(CAM_SENSOR,"rece ispv4_power");
+		i2c_reg_settings = &i2c_data->init_settings;
+		i2c_reg_settings->request_id = 0;
+		i2c_reg_settings->is_settings_valid = 0;
+		rc = cam_sensor_power_up_extra(s_ctrl);
+		if (rc < 0) {
+			CAM_ERR(CAM_SENSOR,
+				"Fail cam_sensor_power_up_extra for poweron: %d",
+				rc);
+			goto end;
+		}
+	}
+	break;
+	case CAM_SENSOR_PACKET_OPCODE_SENSOR_ISPV4_POWERDOWN: {
+		CAM_WARN(CAM_SENSOR,"rece ispv4_power");
+		i2c_reg_settings = &i2c_data->init_settings;
+		i2c_reg_settings->request_id = 0;
+		i2c_reg_settings->is_settings_valid = 0;
+		rc = cam_sensor_power_down_extra(s_ctrl);
+		if (rc < 0) {
+			CAM_ERR(CAM_SENSOR,
+				"Fail cam_sensor_power_up_extra for down: %d",
+				rc);
+			goto end;
+		}
+	}
+	break;
+#endif
+
 	case CAM_SENSOR_PACKET_OPCODE_SENSOR_NOP: {
 		if ((s_ctrl->sensor_state == CAM_SENSOR_INIT) ||
 			(s_ctrl->sensor_state == CAM_SENSOR_ACQUIRE)) {
@@ -2392,3 +2492,62 @@ int cam_sensor_process_evt(struct cam_req_mgr_link_evt_data *evt_data)
 
 	return rc;
 }
+
+#if IS_ENABLED(CONFIG_MIISP)
+int cam_sensor_power_up_extra(struct cam_sensor_ctrl_t *s_ctrl)
+{
+        int rc;
+        struct cam_sensor_power_ctrl_t *power_info;
+        struct cam_camera_slave_info *slave_info;
+        struct cam_hw_soc_info *soc_info =
+                &s_ctrl->soc_info;
+
+        if (!s_ctrl) {
+                CAM_ERR(CAM_SENSOR, "failed: %pK", s_ctrl);
+                return -EINVAL;
+        }
+
+        power_info = &s_ctrl->sensordata->power_info;
+        slave_info = &(s_ctrl->sensordata->slave_info);
+
+        if (!power_info || !slave_info) {
+                CAM_ERR(CAM_SENSOR, "failed: %pK %pK", power_info, slave_info);
+                return -EINVAL;
+        }
+
+        rc = cam_sensor_core_power_up_extra(power_info, soc_info);
+        if (rc < 0) {
+                CAM_ERR(CAM_SENSOR, "power up extra the core is failed:%d", rc);
+                return rc;
+        }
+
+        return rc;
+}
+
+int cam_sensor_power_down_extra(struct cam_sensor_ctrl_t *s_ctrl)
+{
+        struct cam_sensor_power_ctrl_t *power_info;
+        struct cam_hw_soc_info *soc_info;
+        int rc = 0;
+
+        if (!s_ctrl) {
+            CAM_ERR(CAM_SENSOR, "failed: s_ctrl %pK", s_ctrl);
+            return -EINVAL;
+        }
+
+        power_info = &s_ctrl->sensordata->power_info;
+        soc_info = &s_ctrl->soc_info;
+
+        if (!power_info) {
+            CAM_ERR(CAM_SENSOR, "failed: power_info %pK", power_info);
+            return -EINVAL;
+        }
+        rc = cam_sensor_util_power_down_extra(power_info, soc_info);
+        if (rc < 0) {
+                CAM_ERR(CAM_SENSOR, "power up extra the core is failed:%d", rc);
+                return rc;
+        }
+
+        return rc;
+}
+#endif
