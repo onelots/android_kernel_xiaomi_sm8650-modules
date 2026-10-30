@@ -135,6 +135,10 @@ enum cam_sensor_packet_opcodes {
 	CAM_SENSOR_PACKET_OPCODE_SENSOR_REG_BANK_LOCK,
 	CAM_SENSOR_PACKET_OPCODE_SENSOR_BUBBLE_UPDATE,
 	CAM_SENSOR_PACKET_OPCODE_SENSOR_WRITE,  //xiaomi add
+	CAM_SENSOR_PACKET_OPCODE_PIPELINE_DELAY,//xiaomi add
+	/*Sensor OEM Begin*/
+	CAM_SENSOR_PACKET_OPCODE_SENSOR_ISPV4_POWERUP = 0x101,
+	CAM_SENSOR_PACKET_OPCODE_SENSOR_ISPV4_POWERDOWN,
 	CAM_SENSOR_PACKET_OPCODE_SENSOR_NOP = 127,
 };
 
@@ -789,6 +793,7 @@ struct cam_csiphy_info {
 	__u8     secure_mode;
 	__u64    settle_time;
 	__u64    data_rate;
+	bool     is_modify_onthego; //add by xiaomi
 } __attribute__((packed));
 
 /**
@@ -817,6 +822,7 @@ struct cam_csiphy_info_v2 {
 	__u32    num_vaild_params;
 	__u32    param_mask;
 	__u32    params[5];
+	bool     is_modify_onthego; //add by xiaomi
 } __attribute__((packed));
 
 /**
