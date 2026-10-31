@@ -19,6 +19,7 @@
    1Byte : Display screen supplier ID (0x0A/0x0B/0x0C ...)
 */
 #define N1_42_02_0A_PANEL_ID 0x00004E310042020A
+#define N1_42_02_00_PANEL_ID 0x00004E3100420200
 #define N2_42_02_0A_PANEL_ID 0x00004E320042020A
 #define N3_42_0D_0A_PANEL_ID 0x00004E3300420D0A
 #define N11U_42_02_0A_PANEL_ID 0x4E3131550042020A
@@ -111,6 +112,7 @@ enum mi_project_panel_id {
 static inline enum mi_project_panel_id mi_get_panel_id(u64 mi_panel_id) {
   switch (mi_panel_id) {
   case N1_42_02_0A_PANEL_ID:
+  case N1_42_02_00_PANEL_ID:
     return N1_PANEL_PA;
   case N2_42_02_0A_PANEL_ID:
     return N2_PANEL_PA;
@@ -201,6 +203,7 @@ static inline const char *mi_get_panel_id_name(u64 mi_panel_id) {
 static inline bool is_use_nt37801_dsc_config(u64 mi_panel_id) {
   switch (mi_panel_id) {
   case N1_42_02_0A_PANEL_ID:
+  case N1_42_02_00_PANEL_ID:
   case N2_42_02_0A_PANEL_ID:
   case N11U_42_02_0A_PANEL_ID:
     return true;
